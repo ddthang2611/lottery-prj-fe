@@ -1,0 +1,26 @@
+1. Màn Hình Dành Cho Người Chơi (User Dashboard)
+    Các form/Input:
+    Mua Vé (Buy Ticket Form):
+    Dropdown/Select: Cho phép chọn vòng giải xổ số đang "Active" (bởi vì có thể có > 1 vòng giải xổ số hoạt động một lúc).
+    Input dạng Selector (Grid chọn số): Phụ thuộc vào loại hình (types) cấu hình của vòng xổ số đó.
+    Nếu vòng chơi chọn loại xổ số thứ 1 (type 1: lấy 5 số trong khoảng từ 1 - 50), hiển thị 50 ô vuông từ 1 đến 50. Người chơi có thể ấn chọn hoặc bỏ chọn. Cần giới hạn chọn đủ 5 ô.
+    Nếu loại 2 (type 2: 3 số từ 1 đến 6). Hiện 6 ô để người chơi click. Giới hạn 3 ô.
+    (Output phụ tại form): Hiển thị giá vé (Ticket Price): Dữ liệu lấy từ blockchain (10000000000 wei / bằng ETH).
+    Nút "Buy Ticket": Nút sẽ kích hoạt ví Web3 (Metamask) gọi hợp đồng hàm buyTicket().
+    Nhận thưởng (Claim Reward Form):
+    Nút "Check Ticket" / "Nhận Thưởng": Form có 1 danh sách hiển thị các vé người này đã mua nhưng chưa Claim (Tình trạng báo là Win/Trúng). Người dùng bấm vào thẻ vé này (sẽ gọi hàm claimReward).
+    Các phần Output hiển thị thông tin:
+    Danh sách giải hiện hành: Hiển thị thời gian đếm ngược kết thúc (expired), tổng giải thưởng (totalBalances).
+    Lịch sử Xổ số (Lịch sử các kỳ trước): Hiển thị danh sách các kỳ xổ số đã kết thúc. Phải hiển thị ID của giải, chuỗi mảng các con số trúng giải.
+    Lịch sử Vé cá nhân: Danh sách vé của user, hiển thị chuỗi dãy số họ chọn để đối chiếu kết quả.
+
+2. Màn Hình Quản Trị (Admin / Operator Dashboard)
+    Các form/Input:
+    Tạo giải mới (Create New Lottery Form):
+    Input: ID Của Vòng Giải Mới (New Lottery ID): Chuỗi (bytes).
+    Input: ID Của Vòng Giải Cũ (Old Lottery ID): Nếu tạo vòng mới từ một vòng đã có.
+    Input (Datetime Picker): Hạn kết thúc (Expired Time): Đây là thời gian timestamp để giới hạn bán vé.
+    Dropdown (Loại xổ số): Lựa chọn loại xổ số (ví dụ loại 1 hoặc 2), từ đây định dạng cấu hình.
+    Nút "Start Lottery": Gọi vào contract qua hàm activeNewLottery.
+    Đóng giải khẩn cấp/thủ công (Inactive Lottery):
+    Nút "Close Draw/Inactive": Bên cạnh các giải đang Active. Kích hoạt gọi hàm inactiveLottery lên mạng blockchain (Thực tế là báo cho Chainlink lấy số). Nếu bạn để backend xử lý cronjob tự động thì không cần làm nút này, nhưng nên có để quản lý phòng ngừa cronjob chết.
