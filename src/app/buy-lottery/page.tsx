@@ -1,368 +1,191 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Wallet, Ticket, Clock, CheckCircle2, AlertCircle } from "lucide-react";
 import { ethers } from "ethers";
-
-import { Select } from "@/components/form/select";
-
-import { Ticket, History, ShieldCheck, Clock, LogOut } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Board } from "@/components/ui/board";
+import { CountdownTimer } from "@/components/ui/countdown";
 import { useWeb3 } from "../../hooks/useWeb3";
-
-const PAST_LOTTERIES = [
-  {
-    id: "LOTTERY_PAST_001",
-    prize: "12.8 ETH",
-    winningNumbers: [5, 12, 23, 34, 45],
-  },
-  { id: "LOTTERY_PAST_002", prize: "6.2 ETH", winningNumbers: [2, 4, 6] },
-];
-
-const CountdownTimer = ({ endTime }: { endTime?: string }) => {
-  const [timeLeft, setTimeLeft] = useState({
-    d: "00",
-    h: "00",
-    m: "00",
-    s: "00",
-  });
-
-  useEffect(() => {
-    if (!endTime) return;
-    const interval = setInterval(() => {
-      const now = new Date().getTime();
-      const end = new Date(endTime).getTime();
-      const distance = end - now;
-
-      if (distance < 0) {
-        clearInterval(interval);
-        setTimeLeft({ d: "00", h: "00", m: "00", s: "00" });
-        return;
-      }
-
-      setTimeLeft({
-        d: Math.floor(distance / (1000 * 60 * 60 * 24))
-          .toString()
-          .padStart(2, "0"),
-        h: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-          .toString()
-          .padStart(2, "0"),
-        m: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
-          .toString()
-          .padStart(2, "0"),
-        s: Math.floor((distance % (1000 * 60)) / 1000)
-          .toString()
-          .padStart(2, "0"),
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [endTime]);
-
-  return (
-    <div className="flex gap-2">
-      <span>{timeLeft.d}d</span>
-      <span>{timeLeft.h}h</span>
-      <span>{timeLeft.m}m</span>
-      <span>{timeLeft.s}s</span>
-    </div>
-  );
-};
+import { useLottery, getActiveLotteries, type ActiveLottery } from "@/hooks/useLottery";
 
 export default function BuyLotteryPage() {
   const router = useRouter();
-  const { account, isChecking, disconnectWallet } = useWeb3();
+  const { account, isChecking } = useWeb3();
+  const { buyTicket, isPending } = useLottery();
 
-  type Lottery = {
-    _id: string;
-    type?: number;
-    // totalBalance can be a string, number, or an object like BigNumber that implements toString()
-    totalBalance?: string | number | { toString(): string } | null;
-    endTime?: string;
-  };
-
-  const [activeLotteries, setActiveLotteries] = useState<Lottery[]>([]);
-  const [isLoadingLotteries, setIsLoadingLotteries] = useState<boolean>(true);
-
-  const [selectedLottery, setSelectedLottery] = useState<string>("");
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [activeLotteries, setActiveLotteries] = useState<ActiveLottery[]>([]);
+  const [selectedLottery, setSelectedLottery] = useState<ActiveLottery | null>(null);
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchLotteries = async () => {
-      try {
-        setIsLoadingLotteries(true);
-        const res = await fetch("http://localhost:3000/lottery/active?type=1");
-        const json = await res.json();
-
-        if (json.success && json.data.items) {
-          setActiveLotteries(json.data.items);
-          if (json.data.items.length > 0) {
-            setSelectedLottery(json.data.items[0]._id);
-          }
-        }
-      } catch (error) {
-        console.error("Lỗi khi fetch giải đấu:", error);
-      } finally {
-        setIsLoadingLotteries(false);
-      }
-    };
-
-    fetchLotteries();
-  }, []);
-
-  useEffect(() => {
-    if (!isChecking && !account) {
-      router.push("/");
+  // Gọi hàm fetch chung từ hook, không truyền param để lấy tất cả các loại giải
+  const fetchLotteries = async () => {
+    setIsLoading(true);
+    const items = await getActiveLotteries();
+    setActiveLotteries(items);
+    if (items.length > 0) {
+      setSelectedLottery(items[0]);
+      setSelectedNumbers([]);
     }
-  }, [isChecking, account, router]);
-
-  if (isChecking) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-slate-500">
-        Đang đồng bộ dữ liệu ví...
-      </div>
-    );
-  }
-
-  if (!account) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-slate-500">
-        Đang chuyển hướng về trang chủ...
-      </div>
-    );
-  }
-
-  const formatAddress = (address?: string) => {
-    if (!address || address.length < 10) return address ?? "";
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+    setIsLoading(false);
   };
 
-  const toggleNumber = (num: number) => {
+
+
+  
+  useEffect(() => {
+    if (!account) return;
+    (async () => {
+      await Promise.resolve();
+      await fetchLotteries();
+      setSelectedNumbers([]);
+    })();
+  }, [account, selectedLottery]); 
+
+  const getLotteryRules = (type?: number) => {
+    if (type === 1) return { maxSelect: 5, totalNumbers: 50 };
+    if (type === 2) return { maxSelect: 3, totalNumbers: 6 };
+    return { maxSelect: 0, totalNumbers: 0 };
+  };
+
+  const handleToggleNumber = (num: number) => {
+    if (!selectedLottery) return;
+    const rules = getLotteryRules(selectedLottery.type);
+
     setSelectedNumbers((prev) => {
       if (prev.includes(num)) return prev.filter((n) => n !== num);
-      if (prev.length >= 5) return prev;
-      return [...prev, num].sort((a, b) => a - b);
+      if (prev.length < rules.maxSelect) return [...prev, num].sort((a, b) => a - b);
+      return prev;
     });
   };
 
-  const lotteryOptions = activeLotteries.map((lottery) => {
-    const balance = lottery.totalBalance
-      ? lottery.totalBalance.toString()
-      : "0";
-    const formattedPrize = ethers.formatEther(balance);
-    const shortId = `LOTTERY_${lottery._id.slice(-4).toUpperCase()}`;
+  const handleBuyTicket = async () => {
+    if (!account) return alert("Vui lòng kết nối ví Metamask!");
+    if (!selectedLottery) return alert("Vui lòng chọn một giải đấu!");
 
-    return {
-      label: `${shortId} - Giải thưởng: ${formattedPrize} ETH`,
-      value: lottery._id,
-    };
-  });
+    const rules = getLotteryRules(selectedLottery.type);
+    if (selectedNumbers.length !== rules.maxSelect) {
+      return alert(`Vui lòng chọn đủ ${rules.maxSelect} số!`);
+    }
+
+    try {
+      await buyTicket(account, selectedLottery._id, selectedNumbers);
+      alert("Mua vé thành công! Chúc bạn may mắn!");
+      setSelectedNumbers([]); 
+      fetchLotteries(); 
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      alert(err.message || "Giao dịch mua vé thất bại");
+    }
+  };
+  
+  if (isChecking || !account) return <div className="p-10 text-center font-medium">Đang kiểm tra kết nối ví Metamask...</div>;
+
+  const rules = getLotteryRules(selectedLottery?.type);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans p-4 md:p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-8 text-slate-900">
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2 mb-1">
-              🎰 Xổ Số Blockchain
-            </h1>
-            <p className="text-slate-500 text-sm">
-              Minh bạch, công bằng, an toàn
-            </p>
+            <h1 className="text-3xl font-bold tracking-tight">Mua Vé Xổ Số</h1>
+            <p className="text-slate-500 mt-1">Chọn số may mắn và giành giải thưởng ETH</p>
           </div>
-
-          <div className="flex gap-3">
-            <Link href="/admin">
-              <Button variant="secondary" className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4" />
-                Quản trị
-              </Button>
-            </Link>
-
-            <div className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-700 border border-green-200 rounded-lg text-sm font-medium">
-              {formatAddress(account)}
+          <div className="flex items-center gap-3">
+            <div className="bg-white border border-black/10 rounded-lg px-4 py-2 flex items-center gap-2 shadow-sm">
+              <Wallet className="w-4 h-4 text-indigo-600" />
+              <span className="text-sm font-medium">{account.slice(0, 6)}...{account.slice(-4)}</span>
             </div>
-
-            <Button
-              variant="danger"
-              onClick={disconnectWallet}
-              className="flex items-center justify-center"
-            >
-              <LogOut className="w-4 h-4" />
-            </Button>
+            <Button variant="outline" onClick={() => router.push("/admin")}>Trang Quản Trị</Button>
           </div>
         </div>
 
-        {/* Main Column */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Buy Lotteries & History */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          {/* CỘT TRÁI */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-              <div className="flex items-center gap-2 mb-6">
-                <Ticket className="w-5 h-5 text-indigo-600" />
-                <h2 className="text-lg font-semibold">Mua Vé Số</h2>
-              </div>
-
-              <div className="mb-4">
-                <p className="text-sm text-slate-500 mb-2">
-                  Chọn vòng giải và các con số may mắn của bạn
-                </p>
-
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Chọn vòng giải
-                </label>
-
-                <Select
-                  value={selectedLottery}
-                  onChange={setSelectedLottery}
-                  placeholder="Chọn vòng giải đang mở..."
-                  options={lotteryOptions}
-                  isLoading={isLoadingLotteries}
-                  disabled={isLoadingLotteries || activeLotteries.length === 0}
-                />
-              </div>
-
-              <div className="mb-6">
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-sm text-slate-600">
-                    Chọn 5 số từ 1-50
-                  </span>
-                  <span className="text-sm font-medium">
-                    {selectedNumbers.length}/5
-                  </span>
+            <Board title={<><Ticket className="w-5 h-5 mr-2 inline" /> Bảng Chọn Số</>}>
+              {!selectedLottery ? (
+                <div className="text-center py-10 text-slate-500">
+                  {isLoading ? "Đang tải giải đấu..." : "Hiện tại không có giải đấu nào mở."}
                 </div>
-
-                <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
-                  {Array.from({ length: 50 }, (_, i) => i + 1).map((num) => {
-                    const selected = selectedNumbers.includes(num);
-
-                    return (
-                      <button
-                        key={num}
-                        onClick={() => toggleNumber(num)}
-                        className={
-                          selected
-                            ? "aspect-square rounded-lg text-sm font-medium bg-indigo-600 text-white transition-all scale-105"
-                            : "aspect-square rounded-lg text-sm font-medium bg-white border border-slate-200 hover:bg-indigo-50 transition-colors"
-                        }
-                      >
-                        {num}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-100 flex justify-between items-center mb-6">
-                <span className="text-slate-600 font-medium">Giá vé</span>
-                <div className="text-right">
-                  <div className="text-lg font-bold text-indigo-700">
-                    10 Gwei
-                  </div>
-                  <div className="text-xs text-slate-500">≈ 0.00000001 ETH</div>
-                </div>
-              </div>
-
-              <Button
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
-                disabled={selectedNumbers.length !== 5 || !selectedLottery}
-              >
-                Mua Vé
-              </Button>
-            </div>
-
-            <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm min-h-[200px] flex flex-col">
-              <div className="flex items-center gap-2 mb-4">
-                <History className="w-5 h-5 text-purple-600" />
-                <h2 className="text-lg font-semibold">Lịch Sử Vé Của Tôi</h2>
-              </div>
-
-              <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">
-                Bạn chưa có vé nào
-              </div>
-            </div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            <Board title="Giải Đang Diễn Ra">
-              <div className="space-y-4">
-                {isLoadingLotteries ? (
-                  <div className="text-center text-sm text-slate-500 py-4">
-                    Đang tải...
-                  </div>
-                ) : activeLotteries.length === 0 ? (
-                  <div className="text-center text-sm text-slate-500 py-4">
-                    Không có giải nào đang mở
-                  </div>
-                ) : (
-                  activeLotteries.map((lottery) => {
-                    const balance = lottery.totalBalance
-                      ? lottery.totalBalance.toString()
-                      : "0";
-
-                    return (
-                      <div
-                        key={lottery._id}
-                        className="p-4 rounded-lg border border-indigo-100 bg-indigo-50/30 transition-all hover:border-indigo-200"
-                      >
-                        <div className="font-medium">
-                          LOTTERY_{lottery._id.slice(-4).toUpperCase()}
-                        </div>
-                        <div className="text-xs text-slate-500 mb-3">
-                          Loại {lottery.type || 1}
-                        </div>
-
-                        <div className="flex justify-between text-sm mb-3">
-                          <span className="text-slate-600">Giải thưởng</span>
-                          <span className="font-bold text-indigo-600">
-                            {ethers.formatEther(balance)} ETH
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-3 text-sm">
-                          <Clock className="w-4 h-4 text-indigo-500" />
-                          {lottery.endTime ? (
-                            <CountdownTimer endTime={lottery.endTime} />
-                          ) : (
-                            <span>Đang cập nhật...</span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </Board>
-
-            <Board title="Lịch Sử Các Kỳ">
-              <div className="space-y-4">
-                {PAST_LOTTERIES.map((lottery) => (
-                  <div
-                    key={lottery.id}
-                    className="p-4 rounded-lg border border-slate-100 bg-slate-50"
-                  >
-                    <div className="font-medium">{lottery.id}</div>
-                    <div className="text-sm text-slate-600 mb-3">
-                      Giải thưởng: {lottery.prize}
+              ) : (
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center p-4 bg-indigo-50 border border-indigo-100 rounded-lg">
+                    <div>
+                      <div className="font-semibold text-indigo-900">Loại vé: Chọn {rules.maxSelect} số từ {rules.totalNumbers} số</div>
+                      <div className="text-sm text-indigo-700 mt-1">Giá vé: <span className="font-bold">0.00000001 ETH</span> (10 Gwei)</div>
                     </div>
+                    <div className="text-2xl font-bold text-indigo-600">{selectedNumbers.length} / {rules.maxSelect}</div>
+                  </div>
 
-                    <div className="flex gap-1.5 flex-wrap">
-                      {lottery.winningNumbers.map((num) => (
-                        <span
-                          key={`${lottery.id}-${num}`}
-                          className="w-7 h-7 flex items-center justify-center rounded-full bg-green-100 text-green-700 text-xs font-semibold"
+                  <div className="grid grid-cols-5 md:grid-cols-10 gap-3">
+                    {Array.from({ length: rules.totalNumbers }, (_, i) => i + 1).map((num) => {
+                      const isSelected = selectedNumbers.includes(num);
+                      return (
+                        <button
+                          key={num}
+                          onClick={() => handleToggleNumber(num)}
+                          className={`
+                            h-12 rounded-full font-bold text-lg transition-all border-2
+                            ${isSelected ? "bg-indigo-600 border-indigo-600 text-white shadow-md transform scale-105" : "bg-white border-slate-200 text-slate-600 hover:border-indigo-400 hover:text-indigo-600"}
+                          `}
                         >
                           {num}
-                        </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="pt-6 border-t flex flex-col items-center">
+                    <div className="mb-4 text-sm text-slate-500">Bộ số may mắn của bạn:</div>
+                    <div className="flex gap-2 mb-6 min-h-[48px]">
+                      {selectedNumbers.length === 0 && <span className="text-slate-400 italic">Chưa chọn số nào</span>}
+                      {selectedNumbers.map((n) => (
+                        <div key={n} className="w-12 h-12 flex items-center justify-center bg-indigo-100 text-indigo-700 font-bold rounded-full border border-indigo-200">{n}</div>
                       ))}
+                    </div>
+                    <Button className="w-full md:w-2/3 py-6 text-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg" onClick={handleBuyTicket} disabled={isPending || selectedNumbers.length !== rules.maxSelect}>
+                      {isPending ? "Đang xử lý giao dịch..." : "Thanh Toán & Mua Vé Mới"}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </Board>
+          </div>
+
+          {/* CỘT PHẢI */}
+          <div className="space-y-6">
+            <Board title="Chọn Giải Đang Mở">
+              <div className="space-y-3">
+                {activeLotteries.length === 0 && !isLoading && <div className="text-sm text-slate-500">Chưa có giải nào.</div>}
+                {activeLotteries.map((lottery) => (
+                  <div key={lottery._id} onClick={() => { setSelectedLottery(lottery); setSelectedNumbers([]); }} className={`p-4 rounded-xl border cursor-pointer transition-all ${selectedLottery?._id === lottery._id ? "border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200" : "border-slate-200 bg-white hover:border-indigo-300"}`}>
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="font-bold text-sm">LOTT_{lottery._id.slice(-4).toUpperCase()}</div>
+                      <div className="text-xs font-semibold px-2 py-1 bg-white rounded-md border text-slate-600">Loại {lottery.type}</div>
+                    </div>
+                    <div className="text-xs text-slate-500 mb-1">
+                      Tổng giải: <span className="font-bold text-indigo-600">{ethers.formatEther(lottery.totalBalance.toString())} ETH</span>
+                    </div>
+                    <div className="text-xs text-red-500 flex items-center gap-1">
+                      <Clock className="w-3 h-3" /> Đóng sau: <CountdownTimer endTime={lottery.endTime} />
                     </div>
                   </div>
                 ))}
               </div>
+            </Board>
+
+            <Board title={<><AlertCircle className="w-4 h-4 text-blue-500 inline mr-1" /> Thể lệ chơi</>}>
+              <ul className="text-sm space-y-3 text-slate-700">
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" /><span><b>Loại 1:</b> Chọn 5 số từ 1-50. Khớp tối thiểu 3 số để nhận thưởng.</span></li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" /><span><b>Loại 2:</b> Chọn 3 số từ 1-6. Khớp 100% để trúng giải độc đắc.</span></li>
+                <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" /><span><b>Phí giao dịch:</b> Mỗi lần mua bạn sẽ phải trả tiền vé (10 Gwei) kèm theo phí Gas của mạng lưới.</span></li>
+              </ul>
             </Board>
           </div>
         </div>
