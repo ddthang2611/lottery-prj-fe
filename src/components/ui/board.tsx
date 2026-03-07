@@ -1,14 +1,14 @@
 import React from "react";
 
 type Props = {
-  title: string;
+  title: React.ReactNode;
   children: React.ReactNode;
 };
 
-export function Board({ title, children }: Props) {
+export function Board({title, children }: Props) {
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-      <h3 className="font-semibold mb-4">{title}</h3>
+    <div className="bg-white border border-black/10 rounded-[14px] p-6">
+      <h3 className="font-bold mb-4">{title}</h3>
       {children}
     </div>
   );
