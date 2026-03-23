@@ -63,7 +63,11 @@ export function usePlayerLottery() {
                 `http://localhost:3000/ticket?walletAddress=${account.toLowerCase()}`,
             );
             const result = await response.json();
-            return result.success ? result.data : [];
+            
+            if (result.success && result.data && Array.isArray(result.data.items)) {
+                return result.data.items;
+            }
+            return [];
         } catch (error) {
             console.error("Lỗi lấy danh sách vé:", error);
             return [];

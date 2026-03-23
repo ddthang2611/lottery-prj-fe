@@ -165,7 +165,7 @@ export default function AdminPage() {
                         <Button
                             variant="outline"
                             className="flex items-center gap-2 bg-white text-slate-700"
-                            onClick={() => router.push("/buy-lottery")}
+                            onClick={() => router.push("/player")}
                         >
                             <ArrowLeft className="w-4 h-4" /> Người chơi
                         </Button>
