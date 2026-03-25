@@ -2,7 +2,8 @@ import React from "react";
 
 type Props = {
   title: React.ReactNode;
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  className?: string;
 };
 
 export function Board({title, children }: Props) {

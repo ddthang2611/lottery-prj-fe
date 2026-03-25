@@ -1,27 +1,33 @@
 [
 	{
-		"inputs": [
-			{ "internalType": "address", "name": "vrfCoordinator", "type": "address" },
-			{ "internalType": "bytes32", "name": "_keyHash", "type": "bytes32" },
-			{ "internalType": "uint64", "name": "_subscriptionId", "type": "uint64" }
-		],
+		"inputs": [],
+		"name": "acceptOwnership",
+		"outputs": [],
 		"stateMutability": "nonpayable",
-		"type": "constructor"
+		"type": "function"
 	},
 	{
 		"inputs": [
-			{ "internalType": "address", "name": "have", "type": "address" },
-			{ "internalType": "address", "name": "want", "type": "address" }
-		],
-		"name": "OnlyCoordinatorCanFulfill",
-		"type": "error"
-	},
-	{
-		"inputs": [
-			{ "internalType": "bytes", "name": "_idNew", "type": "bytes" },
-			{ "internalType": "bytes", "name": "_idOld", "type": "bytes" },
-			{ "internalType": "uint256", "name": "expired", "type": "uint256" },
-			{ "internalType": "uint8", "name": "types", "type": "uint8" }
+			{
+				"internalType": "bytes",
+				"name": "_idNew",
+				"type": "bytes"
+			},
+			{
+				"internalType": "bytes",
+				"name": "_idOld",
+				"type": "bytes"
+			},
+			{
+				"internalType": "uint256",
+				"name": "expired",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint8",
+				"name": "types",
+				"type": "uint8"
+			}
 		],
 		"name": "activeNewLottery",
 		"outputs": [],
@@ -30,9 +36,34 @@
 	},
 	{
 		"inputs": [
-			{ "internalType": "bytes", "name": "_idLottery", "type": "bytes" },
-			{ "internalType": "bytes", "name": "_idTicket", "type": "bytes" },
-			{ "internalType": "uint8[]", "name": "numbers", "type": "uint8[]" }
+			{
+				"internalType": "address",
+				"name": "_op",
+				"type": "address"
+			}
+		],
+		"name": "addOperator",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes",
+				"name": "_idLottery",
+				"type": "bytes"
+			},
+			{
+				"internalType": "bytes",
+				"name": "_idTicket",
+				"type": "bytes"
+			},
+			{
+				"internalType": "uint8[]",
+				"name": "numbers",
+				"type": "uint8[]"
+			}
 		],
 		"name": "buyTicket",
 		"outputs": [],
@@ -40,20 +71,404 @@
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "callbackGasLimit",
-		"outputs": [{ "internalType": "uint32", "name": "", "type": "uint32" }],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
 		"inputs": [
-			{ "internalType": "bytes", "name": "_idLottery", "type": "bytes" },
-			{ "internalType": "bytes", "name": "_idTicket", "type": "bytes" }
+			{
+				"internalType": "bytes",
+				"name": "_idLottery",
+				"type": "bytes"
+			},
+			{
+				"internalType": "bytes",
+				"name": "_idTicket",
+				"type": "bytes"
+			}
 		],
 		"name": "claimReward",
 		"outputs": [],
 		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes",
+				"name": "_id",
+				"type": "bytes"
+			}
+		],
+		"name": "inactiveLottery",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "vrfCoordinator",
+				"type": "address"
+			},
+			{
+				"internalType": "bytes32",
+				"name": "_keyHash",
+				"type": "bytes32"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_subscriptionId",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "have",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "want",
+				"type": "address"
+			}
+		],
+		"name": "OnlyCoordinatorCanFulfill",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "have",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "coordinator",
+				"type": "address"
+			}
+		],
+		"name": "OnlyOwnerOrCoordinator",
+		"type": "error"
+	},
+	{
+		"inputs": [],
+		"name": "ZeroAddress",
+		"type": "error"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "vrfCoordinator",
+				"type": "address"
+			}
+		],
+		"name": "CoordinatorSet",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "bytes",
+				"name": "idOld",
+				"type": "bytes"
+			},
+			{
+				"indexed": false,
+				"internalType": "bytes",
+				"name": "idNew",
+				"type": "bytes"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "expired",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint8",
+				"name": "types",
+				"type": "uint8"
+			}
+		],
+		"name": "LotteryActivated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "bytes",
+				"name": "id",
+				"type": "bytes"
+			}
+		],
+		"name": "LotteryInactivated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			}
+		],
+		"name": "OwnershipTransferRequested",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			}
+		],
+		"name": "OwnershipTransferred",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "bytes",
+				"name": "idLottery",
+				"type": "bytes"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint8[]",
+				"name": "result",
+				"type": "uint8[]"
+			}
+		],
+		"name": "RandomFulfilled",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "bytes",
+				"name": "idLottery",
+				"type": "bytes"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "requestId",
+				"type": "uint256"
+			}
+		],
+		"name": "RandomRequested",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "requestId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256[]",
+				"name": "randomWords",
+				"type": "uint256[]"
+			}
+		],
+		"name": "rawFulfillRandomWords",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "bytes",
+				"name": "idLottery",
+				"type": "bytes"
+			},
+			{
+				"indexed": false,
+				"internalType": "bytes",
+				"name": "idTicket",
+				"type": "bytes"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "winner",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "RewardClaimed",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_vrfCoordinator",
+				"type": "address"
+			}
+		],
+		"name": "setCoordinator",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes",
+				"name": "_id",
+				"type": "bytes"
+			},
+			{
+				"internalType": "uint8[]",
+				"name": "_result",
+				"type": "uint8[]"
+			}
+		],
+		"name": "setResultForTesting",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "bytes",
+				"name": "idLottery",
+				"type": "bytes"
+			},
+			{
+				"indexed": false,
+				"internalType": "bytes",
+				"name": "idTicket",
+				"type": "bytes"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "buyer",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint8[]",
+				"name": "numbers",
+				"type": "uint8[]"
+			}
+		],
+		"name": "TicketBought",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			}
+		],
+		"name": "transferOwnership",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address payable",
+				"name": "to",
+				"type": "address"
+			}
+		],
+		"name": "withdraw",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "Withdrawn",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "callbackGasLimit",
+		"outputs": [
+			{
+				"internalType": "uint32",
+				"name": "",
+				"type": "uint32"
+			}
+		],
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -62,15 +477,51 @@
 		"outputs": [
 			{
 				"components": [
-					{ "internalType": "bytes", "name": "previousId", "type": "bytes" },
-					{ "internalType": "bytes", "name": "id", "type": "bytes" },
-					{ "internalType": "uint8", "name": "index", "type": "uint8" },
-					{ "internalType": "bool", "name": "isActive", "type": "bool" },
-					{ "internalType": "uint256", "name": "totalBalances", "type": "uint256" },
-					{ "internalType": "uint256", "name": "remains", "type": "uint256" },
-					{ "internalType": "uint8[]", "name": "result", "type": "uint8[]" },
-					{ "internalType": "uint256", "name": "expired", "type": "uint256" },
-					{ "internalType": "uint8", "name": "types", "type": "uint8" }
+					{
+						"internalType": "bytes",
+						"name": "previousId",
+						"type": "bytes"
+					},
+					{
+						"internalType": "bytes",
+						"name": "id",
+						"type": "bytes"
+					},
+					{
+						"internalType": "uint8",
+						"name": "index",
+						"type": "uint8"
+					},
+					{
+						"internalType": "bool",
+						"name": "isActive",
+						"type": "bool"
+					},
+					{
+						"internalType": "uint256",
+						"name": "totalBalances",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "remains",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint8[]",
+						"name": "result",
+						"type": "uint8[]"
+					},
+					{
+						"internalType": "uint256",
+						"name": "expired",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint8",
+						"name": "types",
+						"type": "uint8"
+					}
 				],
 				"internalType": "struct Lottery.LotteryCycle",
 				"name": "",
@@ -81,20 +532,62 @@
 		"type": "function"
 	},
 	{
-		"inputs": [{ "internalType": "bytes", "name": "_id", "type": "bytes" }],
+		"inputs": [
+			{
+				"internalType": "bytes",
+				"name": "_id",
+				"type": "bytes"
+			}
+		],
 		"name": "getLotteryInfo",
 		"outputs": [
 			{
 				"components": [
-					{ "internalType": "bytes", "name": "previousId", "type": "bytes" },
-					{ "internalType": "bytes", "name": "id", "type": "bytes" },
-					{ "internalType": "uint8", "name": "index", "type": "uint8" },
-					{ "internalType": "bool", "name": "isActive", "type": "bool" },
-					{ "internalType": "uint256", "name": "totalBalances", "type": "uint256" },
-					{ "internalType": "uint256", "name": "remains", "type": "uint256" },
-					{ "internalType": "uint8[]", "name": "result", "type": "uint8[]" },
-					{ "internalType": "uint256", "name": "expired", "type": "uint256" },
-					{ "internalType": "uint8", "name": "types", "type": "uint8" }
+					{
+						"internalType": "bytes",
+						"name": "previousId",
+						"type": "bytes"
+					},
+					{
+						"internalType": "bytes",
+						"name": "id",
+						"type": "bytes"
+					},
+					{
+						"internalType": "uint8",
+						"name": "index",
+						"type": "uint8"
+					},
+					{
+						"internalType": "bool",
+						"name": "isActive",
+						"type": "bool"
+					},
+					{
+						"internalType": "uint256",
+						"name": "totalBalances",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "remains",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint8[]",
+						"name": "result",
+						"type": "uint8[]"
+					},
+					{
+						"internalType": "uint256",
+						"name": "expired",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint8",
+						"name": "types",
+						"type": "uint8"
+					}
 				],
 				"internalType": "struct Lottery.LotteryCycle",
 				"name": "",
@@ -105,23 +598,34 @@
 		"type": "function"
 	},
 	{
-		"inputs": [{ "internalType": "bytes", "name": "_id", "type": "bytes" }],
+		"inputs": [
+			{
+				"internalType": "bytes",
+				"name": "_id",
+				"type": "bytes"
+			}
+		],
 		"name": "getLotteryResult",
-		"outputs": [{ "internalType": "uint8[]", "name": "", "type": "uint8[]" }],
+		"outputs": [
+			{
+				"internalType": "uint8[]",
+				"name": "",
+				"type": "uint8[]"
+			}
+		],
 		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [{ "internalType": "bytes", "name": "_id", "type": "bytes" }],
-		"name": "inactiveLottery",
-		"outputs": [],
-		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
 		"inputs": [],
 		"name": "keyHash",
-		"outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+		"outputs": [
+			{
+				"internalType": "bytes32",
+				"name": "",
+				"type": "bytes32"
+			}
+		],
 		"stateMutability": "view",
 		"type": "function"
 	},
@@ -129,68 +633,183 @@
 		"inputs": [],
 		"name": "lotteries",
 		"outputs": [
-			{ "internalType": "uint256", "name": "totalBalances", "type": "uint256" },
-			{ "internalType": "uint8", "name": "totalCylces", "type": "uint8" }
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [{ "internalType": "bytes", "name": "", "type": "bytes" }],
-		"name": "lotteryRandomRequested",
-		"outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [{ "internalType": "bytes", "name": "", "type": "bytes" }],
-		"name": "lotterySettings",
-		"outputs": [
-			{ "internalType": "uint8", "name": "numberSetting", "type": "uint8" },
-			{ "internalType": "uint8", "name": "maximunSetting", "type": "uint8" },
-			{ "internalType": "uint256", "name": "price", "type": "uint256" }
+			{
+				"internalType": "uint256",
+				"name": "totalBalances",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint8",
+				"name": "totalCycles",
+				"type": "uint8"
+			}
 		],
 		"stateMutability": "view",
 		"type": "function"
 	},
 	{
 		"inputs": [
-			{ "internalType": "uint256", "name": "requestId", "type": "uint256" },
-			{ "internalType": "uint256[]", "name": "randomWords", "type": "uint256[]" }
+			{
+				"internalType": "bytes",
+				"name": "",
+				"type": "bytes"
+			}
 		],
-		"name": "rawFulfillRandomWords",
-		"outputs": [],
-		"stateMutability": "nonpayable",
+		"name": "lotteryRandomRequested",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes",
+				"name": "",
+				"type": "bytes"
+			}
+		],
+		"name": "lotterySettings",
+		"outputs": [
+			{
+				"internalType": "uint8",
+				"name": "numberSetting",
+				"type": "uint8"
+			},
+			{
+				"internalType": "uint8",
+				"name": "maximunSetting",
+				"type": "uint8"
+			},
+			{
+				"internalType": "uint256",
+				"name": "price",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "operators",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "owner",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
 		"inputs": [],
 		"name": "requestConfirmations",
-		"outputs": [{ "internalType": "uint16", "name": "", "type": "uint16" }],
+		"outputs": [
+			{
+				"internalType": "uint16",
+				"name": "",
+				"type": "uint16"
+			}
+		],
 		"stateMutability": "view",
 		"type": "function"
 	},
 	{
-		"inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
 		"name": "requestIdToLotteryId",
-		"outputs": [{ "internalType": "bytes", "name": "", "type": "bytes" }],
+		"outputs": [
+			{
+				"internalType": "bytes",
+				"name": "",
+				"type": "bytes"
+			}
+		],
 		"stateMutability": "view",
 		"type": "function"
 	},
 	{
 		"inputs": [],
 		"name": "s_subscriptionId",
-		"outputs": [{ "internalType": "uint64", "name": "", "type": "uint64" }],
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
 		"stateMutability": "view",
 		"type": "function"
 	},
 	{
-		"inputs": [{ "internalType": "uint8", "name": "", "type": "uint8" }],
+		"inputs": [],
+		"name": "s_vrfCoordinator",
+		"outputs": [
+			{
+				"internalType": "contract IVRFCoordinatorV2Plus",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint8",
+				"name": "",
+				"type": "uint8"
+			}
+		],
 		"name": "settingDefault",
 		"outputs": [
-			{ "internalType": "uint8", "name": "numberSetting", "type": "uint8" },
-			{ "internalType": "uint8", "name": "maximunSetting", "type": "uint8" },
-			{ "internalType": "uint256", "name": "price", "type": "uint256" }
+			{
+				"internalType": "uint8",
+				"name": "numberSetting",
+				"type": "uint8"
+			},
+			{
+				"internalType": "uint8",
+				"name": "maximunSetting",
+				"type": "uint8"
+			},
+			{
+				"internalType": "uint256",
+				"name": "price",
+				"type": "uint256"
+			}
 		],
 		"stateMutability": "view",
 		"type": "function"
